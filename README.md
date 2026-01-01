@@ -36,7 +36,12 @@ git clone https://www.modelscope.cn/datasets/BJQW14B/bs_challenge_financial_14b_
 from modelscope.hub.snapshot_download import snapshot_download
 snapshot_download("AI-ModelScope/m3e-base", cache_dir="./models")
 ```
-### 4. 将文件中的路径修改为自己的
-### 5. 启动web服务
+### 4. 将文件中的数据库&模型路径修改为自己的
+### 5. 在utils文件夹里新建.env输入自己的LLM的API_KEY
+```txt
+  DEEPSEEK_API_KEY=你的api-key 
+  DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
+```
+### 6. 启动web服务
 ```bash
 python app/web.py

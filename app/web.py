@@ -12,7 +12,6 @@ except ImportError:
 
 
 def gradio_chat(message, history):
-
     if not message:
         return "", history or []
 
@@ -34,12 +33,11 @@ def gradio_chat(message, history):
                 if len(pair) >= 2 and pair[1]:
                     chat_history_messages.append(AIMessage(content=pair[1]))
 
-    # 调用核心 RAG 函数
     try:
         answer, new_chat_history_messages, _ = ask_question(
             question=message,
             chat_history_messages=chat_history_messages,
-            chat_history_str=""  # 如果 query.py 不需要，可忽略
+            chat_history_str=""
         )
     except Exception as e:
         answer = f"系统出错：{str(e)}"
@@ -64,40 +62,113 @@ def gradio_chat(message, history):
     return "", new_history_dict
 
 
-with gr.Blocks(title="专业金融顾问 RAG 系统") as demo:
-    gr.Markdown("## 📊 专业金融顾问 RAG 系统")
-    gr.Markdown("基于上市公司年报与基金数据的智能问答 · 输入 `q` 结束对话")
+# ✅ 使用 Gradio 官方主题 + 自定义微调（避免冲突）
+custom_css = """
+/* 修复消息气泡错位 —— 关键！ */
+.gradio-container .chatbot {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
-    chatbot = gr.Chatbot(
-        label="对话记录",
-        height=500
-    )
+/* 用户消息：右对齐 */
+.chatbot .message.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border-radius: 16px 16px 4px 16px;
+    padding: 12px 18px;
+    max-width: 70%;
+    margin-left: auto;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
 
-    msg = gr.Textbox(
-        label="你的问题",
-        placeholder="例如：中国铁路通信信号股份有限公司注册地在哪？",
-        lines=1
-    )
+/* 助手消息：左对齐 */
+.chatbot .message.assistant {
+    align-self: flex-start;
+    background: white;
+    color: #1a202c;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px 16px 16px 4px;
+    padding: 12px 18px;
+    max-width: 70%;
+    margin-right: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 输入框：单行、横排 */
+.textbox {
+    font-size: 15px;
+    padding: 12px 18px;
+    border-radius: 20px;
+    border: 1px solid #cbd5e0;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.textbox:focus {
+    outline: none;
+    border-color: #3182ce;
+    box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+}
+
+/* 按钮：圆角胶囊 */
+.button-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.button-clear {
+    background: #f8fafc;
+    color: #4a5568;
+    border: 1px solid #cbd5e0;
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 14px;
+}
+"""
+
+with gr.Blocks(
+    title="金融顾问 RAG 系统",
+    css=custom_css,
+    theme=gr.themes.Soft(primary_hue="blue"),
+    fill_height=True
+) as demo:
+    gr.Markdown("# 📊 金融顾问 RAG 系统")
+    gr.Markdown("基于2019–2021年基金数据与招股说明书 · 输入 `q` 结束对话")
+
+    chatbot = gr.Chatbot(height=550)
 
     with gr.Row():
-        submit_btn = gr.Button("发送", variant="primary")
-        clear_btn = gr.Button("清空")
+        msg = gr.Textbox(
+            placeholder="请输入您的问题（按 Enter 发送）...",
+            lines=1,
+            max_lines=1,
+            scale=8,
+            autofocus=True
+        )
+        submit_btn = gr.Button("发送", variant="primary", scale=1)
 
-    # 事件绑定
-    submit_event = msg.submit(
+    with gr.Row():
+        clear_btn = gr.Button("清空对话")
+
+    msg.submit(
         fn=gradio_chat,
         inputs=[msg, chatbot],
-        outputs=[msg, chatbot],
-        queue=False
+        outputs=[msg, chatbot]
     )
     submit_btn.click(
         fn=gradio_chat,
         inputs=[msg, chatbot],
-        outputs=[msg, chatbot],
-        queue=False
+        outputs=[msg, chatbot]
     )
     clear_btn.click(
-        fn=lambda: (None, []),
+        fn=lambda: ("", []),
         inputs=[],
         outputs=[msg, chatbot]
     )

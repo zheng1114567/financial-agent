@@ -1,4 +1,13 @@
-/rag/utils/.env
-/rag/src/data_base/
-/rag/src/financial_dataset/
-/rag/AI-ModelScope/
+﻿__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.venv/
+venv/
+node_modules/
+*.log
+.env
+.env.*
+data/
+.idea/
+*.sqlite3

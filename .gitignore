@@ -1,4 +1,4 @@
-﻿__pycache__/
+__pycache__/
 *.py[cod]
 *.pyo
 .Python
@@ -11,3 +11,7 @@ node_modules/
 data/
 .idea/
 *.sqlite3
+
+# 一鍵生成的網站專案輸出（由本機 agent 寫入，勿提交）
+agent/web/
+/web/
